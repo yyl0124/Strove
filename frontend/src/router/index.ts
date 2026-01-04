@@ -1,145 +1,64 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '../store/auth';
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/',
+    name: 'home',
+    redirect: '/login'
+  },
+  {
     path: '/login',
     name: 'login',
-    component: () => import('../views/LoginView.vue'),
-    meta: { public: true },
+    component: () => import('../views/Auth/Login.vue')
   },
   {
     path: '/register',
     name: 'register',
-    component: () => import('../views/RegisterView.vue'),
-    meta: { public: true },
+    component: () => import('../views/Auth/Register.vue')
   },
   {
-    path: '/',
-    component: () => import('../layouts/MainLayout.vue'),
-    children: [
-      { path: '', redirect: '/overview' },
-      {
-        path: 'overview',
-        name: 'overview',
-        component: () => import('../views/FeatureOverviewView.vue'),
-      },
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        component: () => import('../views/DashboardView.vue'),
-      },
-      {
-        path: 'clubs',
-        name: 'clubs',
-        component: () => import('../views/ClubsView.vue'),
-      },
-      {
-        path: 'clubs/:id',
-        name: 'club-detail',
-        component: () => import('../views/ClubDetailView.vue'),
-        props: true,
-      },
-      {
-        path: 'activities',
-        name: 'activities',
-        component: () => import('../views/ActivitiesView.vue'),
-      },
-      {
-        path: 'messages',
-        name: 'messages',
-        component: () => import('../views/MessagesView.vue'),
-      },
-      {
-        path: 'profile',
-        name: 'profile',
-        component: () => import('../views/ProfileView.vue'),
-      },
-      {
-        path: 'check-in',
-        name: 'check-in',
-        component: () => import('../views/CheckInView.vue'),
-      },
-      {
-        path: 'resources',
-        name: 'resources',
-        component: () => import('../views/ResourcesView.vue'),
-      },
-      {
-        path: 'collaborations',
-        name: 'collaborations',
-        component: () => import('../views/CollaborationView.vue'),
-      },
-      {
-        path: 'club/manage',
-        name: 'club-manage',
-        component: () => import('../views/club/ClubManagementView.vue'),
-        meta: { roles: ['CLUB_MANAGER', 'UNION_STAFF', 'SYSTEM_ADMIN'] },
-      },
-      {
-        path: 'club/manage/activities',
-        name: 'club-manage-activities',
-        component: () => import('../views/club/ClubManagementView.vue'),
-        meta: { roles: ['CLUB_MANAGER', 'UNION_STAFF', 'SYSTEM_ADMIN'], defaultTab: 'activities' },
-      },
-      {
-        path: 'club/manage/video',
-        name: 'club-manage-video',
-        component: () => import('../views/club/PromoVideoManagerView.vue'),
-        meta: { roles: ['CLUB_MANAGER', 'UNION_STAFF', 'SYSTEM_ADMIN'] },
-      },
-      {
-        path: 'club/check-in-manager',
-        name: 'club-checkin-manager',
-        component: () => import('../views/CheckInManagerView.vue'),
-        meta: { roles: ['CLUB_MANAGER', 'UNION_STAFF', 'SYSTEM_ADMIN'] },
-      },
-      {
-        path: 'admin/users',
-        name: 'admin-users',
-        component: () => import('../views/AdminUsersView.vue'),
-        meta: { roles: ['SYSTEM_ADMIN'] },
-      },
-    ],
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/Dashboard/Home.vue'),
+    meta: { requiresAuth: true }
   },
   {
-    path: '/:pathMatch(.*)*',
-    redirect: '/',
+    path: '/documents',
+    name: 'documents',
+    component: () => import('../views/Documents/DocumentList.vue'),
+    meta: { requiresAuth: true }
   },
-];
+  {
+    path: '/chat',
+    name: 'chat',
+    component: () => import('../views/Chat/ChatInterface.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/inspiration',
+    name: 'inspiration',
+    component: () => import('../views/Inspiration/InspirationGenerator.vue'),
+    meta: { requiresAuth: true }
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes
+})
 
-router.beforeEach(async (to, _from, next) => {
-  const auth = useAuthStore();
-  if (!auth.initialised) {
-    await auth.bootstrap();
-  }
-  if (to.meta.public) {
-    if (auth.isAuthenticated && to.name === 'login') {
-      next({ name: 'dashboard' });
-    } else {
-      next();
-    }
-    return;
-  }
-  if (!auth.isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } });
-    return;
-  }
-  const requiredRoles = (to.meta.roles as string[] | undefined) ?? [];
-  if (requiredRoles.length > 0) {
-    const hasRole = requiredRoles.some((role) => auth.roles.includes(role as any));
-    if (!hasRole) {
-      next({ name: 'dashboard' });
-      return;
-    }
-  }
-  next();
-});
+// 路由守卫
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem('token')
 
-export default router;
+  if (to.meta.requiresAuth && !token) {
+    next('/login')
+  } else if ((to.path === '/login' || to.path === '/register') && token) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+})
+
+export default router

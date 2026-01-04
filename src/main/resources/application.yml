@@ -1,8 +1,10 @@
 spring:
+  application:
+    name: strove
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/campus_club?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/strove_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:2636888165}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -20,39 +22,23 @@ spring:
 
 logging:
   level:
-    com.erokin.campusclubmanagement: INFO
+    com.erokin.strove: INFO
 
 app:
   security:
     jwt:
-      secret: ${JWT_SECRET:change-this-secret-in-production-please-change}
+      secret: ${JWT_SECRET:strove-ai-writing-assistant-jwt-secret-key-for-production-2024-secure}
       expiration-ms: 86400000
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
+  ai:
+    # AI服务配置 - 可根据实际使用的AI服务商调整
+    enabled: ${AI_ENABLED:false}
+    api-key: ${AI_API_KEY:}
+    api-endpoint: ${AI_API_ENDPOINT:}
+    model: ${AI_MODEL:gpt-3.5-turbo}
+    max-tokens: ${AI_MAX_TOKENS:2000}
+    temperature: ${AI_TEMPERATURE:0.7}
 
 server:
   port: ${SERVER_PORT:8123}
-
-aliyun:
-  oss:
-    enabled: ${ALIYUN_OSS_ENABLED:false}
-    endpoint: ${ALIYUN_OSS_ENDPOINT:https://oss-cn-hangzhou.aliyuncs.com}
-    region: ${ALIYUN_OSS_REGION:cn-hangzhou}
-    bucket: ${ALIYUN_OSS_BUCKET:campus-club-sample}
-    base-path: ${ALIYUN_OSS_BASE_PATH:}
-    public-domain: ${ALIYUN_OSS_PUBLIC_DOMAIN:}
-    default-url-expiry: ${ALIYUN_OSS_URL_EXPIRY:PT1H}
-  speech:
-    enabled: ${ALIYUN_SPEECH_ENABLED:false}
-    region-id: ${ALIYUN_SPEECH_REGION:cn-shanghai}
-    endpoint-name: ${ALIYUN_SPEECH_ENDPOINT_NAME:cn-shanghai}
-    product: ${ALIYUN_SPEECH_PRODUCT:nls-filetrans}
-    domain: ${ALIYUN_SPEECH_DOMAIN:filetrans.cn-shanghai.aliyuncs.com}
-    api-version: ${ALIYUN_SPEECH_API_VERSION:2018-08-17}
-    version: ${ALIYUN_SPEECH_VERSION:4.0}
-    app-key: ${NLS_APP_KEY:}
-    access-key-id: ${ALIYUN_AK_ID:}
-    access-key-secret: ${ALIYUN_AK_SECRET:}
-    enable-words: true
-    poll-interval: ${ALIYUN_SPEECH_POLL:PT3S}
-    max-poll-attempts: ${ALIYUN_SPEECH_ATTEMPTS:40}
